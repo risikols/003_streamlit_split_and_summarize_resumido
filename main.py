@@ -6,9 +6,6 @@ st.title("Resumidor de PDF/TXT")
 
 # ---------------------- Funciones ----------------------
 def resumir_bloque(texto, max_sentencias=3):
-    """
-    Resume un bloque de texto tomando las primeras max_sentencias frases de cada párrafo.
-    """
     bloques = texto.split("\n\n")
     resumen_parrafos = []
     for bloque in bloques:
@@ -17,9 +14,6 @@ def resumir_bloque(texto, max_sentencias=3):
     return "\n\n".join(resumen_parrafos)
 
 def dividir_en_bloques(texto, max_parrafos=50):
-    """
-    Divide el texto en bloques de hasta max_parrafos párrafos.
-    """
     bloques = texto.split("\n\n")
     for i in range(0, len(bloques), max_parrafos):
         yield "\n\n".join(bloques[i:i + max_parrafos])
@@ -43,13 +37,12 @@ if "resumen" not in st.session_state:
 # ---------------------- File uploader ----------------------
 uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"], key="uploader")
 
-# ---------------------- Procesar archivo ----------------------
 if uploaded_file:
-    # Resetear el texto y resumen anteriores
+    # Resetear siempre el estado
     st.session_state.texto = ""
     st.session_state.resumen = ""
 
-    # Leer el archivo
+    # Leer archivo
     if uploaded_file.type == "application/pdf":
         st.session_state.texto = leer_pdf(uploaded_file)
     elif uploaded_file.type == "text/plain":
@@ -58,12 +51,15 @@ if uploaded_file:
         st.error("Formato no soportado")
         st.session_state.texto = ""
 
-    # Generar resumen si hay texto
+    # Generar resumen
     if st.session_state.texto:
         resumen_total = []
         for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
             resumen_total.append(resumir_bloque(bloque, max_sentencias=3))
         st.session_state.resumen = "\n\n".join(resumen_total)
+
+    # Forzar recarga de la app para que los nuevos widgets se muestren
+    st.experimental_rerun()
 
 # ---------------------- Mostrar contenido ----------------------
 if st.session_state.texto:
@@ -73,4 +69,5 @@ if st.session_state.texto:
 if st.session_state.resumen:
     st.subheader("Resumen generado")
     st.text_area("Resumen", st.session_state.resumen, height=400, key="resumen_area")
+
 
