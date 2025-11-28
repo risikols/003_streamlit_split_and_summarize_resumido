@@ -3,7 +3,6 @@ from PyPDF2 import PdfReader
 import pandas as pd
 
 st.set_page_config(page_title="Resumidor Realista", layout="wide")
-
 st.title("Resumidor de PDF/TXT")
 
 uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"])
@@ -43,4 +42,3 @@ if uploaded_file:
         st.subheader("Resumen generado")
         resumen = resumir_texto(texto, max_sentencias=3)
         st.text_area("Resumen", resumen, height=200)
-
