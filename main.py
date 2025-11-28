@@ -1,37 +1,27 @@
 import streamlit as st
 from PyPDF2 import PdfReader
+import re
 
 st.set_page_config(page_title="Herramienta para resumir archivos", layout="wide")
 st.title("RESUME tus PDF/TXT")
 
 # ---------------------- Funciones ----------------------
-def dividir_en_bloques(texto, max_parrafos=50):
+def dividir_en_bloques_por_lineas(texto):
     """
-    Divide el texto en bloques de hasta max_parrafos párrafos.
+    Divide el texto en bloques usando como separador
+    más de dos líneas en blanco consecutivas.
     """
-    texto = texto.replace("\r\n", "\n").replace("\r", "\n")
-    parrafos = [p.strip() for p in texto.split("\n\n") if p.strip()]
-    for i in range(0, len(parrafos), max_parrafos):
-        yield "\n\n".join(parrafos[i:i + max_parrafos])
+    bloques = re.split(r'\n{3,}', texto.replace('\r\n', '\n').replace('\r', '\n'))
+    bloques = [b.strip() for b in bloques if b.strip()]
+    return bloques
 
 def resumir_bloque(texto, max_sentencias=3):
     """
     Resume un bloque completo tomando hasta max_sentencias frases en total.
-    Mantiene la separación de bloques.
     """
-    texto = texto.replace("\r\n", "\n").replace("\r", "\n")
-    parrafos = [p.strip() for p in texto.split("\n\n") if p.strip()]
-
     # Dividir todo el bloque en frases
-    todas_las_frases = []
-    for parrafo in parrafos:
-        frases = [f.strip() for f in parrafo.split(". ") if f.strip()]
-        todas_las_frases.extend(frases)
-
-    # Tomar solo las primeras max_sentencias frases
-    resumen_frases = todas_las_frases[:max_sentencias]
-
-    # Volver a unir en un texto
+    frases = [f.strip() for f in re.split(r'\. ', texto) if f.strip()]
+    resumen_frases = frases[:max_sentencias]
     return ". ".join(resumen_frases) + ("." if resumen_frases else "")
 
 def leer_pdf(file):
@@ -71,11 +61,10 @@ if uploaded_file:
         st.error("Formato no soportado")
         st.session_state.texto = ""
 
-    # Generar resumen por bloques
+    # Generar resumen por bloques (separados por más de dos líneas en blanco)
     if st.session_state.texto:
-        resumen_total = []
-        for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
-            resumen_total.append(resumir_bloque(bloque, max_sentencias=2))  # máximo 3 frases por bloque
+        bloques = dividir_en_bloques_por_lineas(st.session_state.texto)
+        resumen_total = [resumir_bloque(b, max_sentencias=2) for b in bloques]  # máximo 2 frases por bloque
         st.session_state.resumen = "\n\n".join(resumen_total)
 
 # ---------------------- Mostrar contenido ----------------------
@@ -96,3 +85,4 @@ if st.session_state.resumen:
         height=400,
         key=f"resumen_area_{st.session_state.file_counter}"
     )
+
