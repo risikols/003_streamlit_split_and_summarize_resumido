@@ -3,7 +3,6 @@ name = "003_streamlit_split_and_summarize_local"
 version = "1.0.0"
 description = "App local de resúmenes PDF/TXT simulados"
 authors = ["Tu Nombre <tu@email.com>"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
