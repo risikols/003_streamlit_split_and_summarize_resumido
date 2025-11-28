@@ -82,3 +82,17 @@ if uploaded_file:
 if st.session_state.texto:
     st.subheader("Texto original")
     st.text_area(
+        "Texto completo",
+        st.session_state.texto,
+        height=300,
+        key=f"texto_original_area_{st.session_state.file_counter}"
+    )
+
+if st.session_state.resumen:
+    st.subheader("Resumen generado")
+    st.text_area(
+        "Resumen",
+        st.session_state.resumen,
+        height=400,
+        key=f"resumen_area_{st.session_state.file_counter}"
+    )
