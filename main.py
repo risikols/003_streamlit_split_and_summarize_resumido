@@ -1,17 +1,17 @@
 import streamlit as st
 from PyPDF2 import PdfReader
 
-st.set_page_config(page_title="Resumen Simulado", layout="wide")
-st.title("Resumidor PDF/TXT (Simulado)")
+st.set_page_config(page_title="Resumidor PDF/TXT", layout="wide")
+st.title("Resumidor Simulado de Archivos PDF y TXT")
 
 uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"])
 
-def resumir_texto(texto):
+def resumir_texto(texto, max_lineas=3):
     """
-    Resumen simulado: toma los primeros 3 bloques de texto separados por salto de línea.
+    Devuelve un resumen simulado: los primeros max_lineas bloques de texto.
     """
     bloques = [b.strip() for b in texto.split("\n") if b.strip()]
-    resumen = " ".join(bloques[:3]) if bloques else ""
+    resumen = " ".join(bloques[:max_lineas]) if bloques else ""
     return resumen
 
 if uploaded_file:
