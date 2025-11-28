@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "003_streamlit_split_and_summarize_resumido"
 version = "1.0.0"
-description = "App local de resúmenes PDF/TXT simulados"
+description = "App de resúmenes PDF/TXT simulados"
 authors = ["Tu Nombre <tu@email.com>"]
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
