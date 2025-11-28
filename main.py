@@ -4,12 +4,7 @@ from PyPDF2 import PdfReader
 st.set_page_config(page_title="Resumidor Realista", layout="wide")
 st.title("Resumidor de PDF/TXT")
 
-uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"], key="uploader")
-
 def resumir_bloque(texto, max_sentencias=3):
-    """
-    Resume un bloque de texto tomando las primeras max_sentencias de cada párrafo
-    """
     bloques = texto.split("\n\n")
     resumen_parrafos = []
     for bloque in bloques:
@@ -18,9 +13,6 @@ def resumir_bloque(texto, max_sentencias=3):
     return "\n\n".join(resumen_parrafos)
 
 def dividir_en_bloques(texto, max_parrafos=50):
-    """
-    Divide el texto en bloques de hasta max_parrafos párrafos
-    """
     bloques = texto.split("\n\n")
     for i in range(0, len(bloques), max_parrafos):
         yield "\n\n".join(bloques[i:i + max_parrafos])
@@ -35,27 +27,38 @@ def leer_pdf(file):
 def leer_txt(file):
     return file.read().decode("utf-8")
 
+# Inicializar session_state
+if "texto" not in st.session_state:
+    st.session_state.texto = ""
+if "resumen" not in st.session_state:
+    st.session_state.resumen = ""
+
+uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"], key="uploader")
+
 if uploaded_file:
-    if uploaded_file.type == "application/pdf":
-        texto = leer_pdf(uploaded_file)
-    elif uploaded_file.type == "text/plain":
-        texto = leer_txt(uploaded_file)
-    else:
-        st.error("Formato no soportado")
-        texto = ""
-
-    if texto:
-        st.subheader("Texto original")
-        st.text_area("Texto completo", texto, height=300, key="texto_original_area")
-
-        st.subheader("Resumen generado")
-
-        # Procesar el texto en bloques para documentos grandes
+    # Leer archivo solo si es distinto del anterior
+    if uploaded_file.name != st.session_state.get("last_uploaded_file", ""):
+        st.session_state.last_uploaded_file = uploaded_file.name
+        if uploaded_file.type == "application/pdf":
+            st.session_state.texto = leer_pdf(uploaded_file)
+        elif uploaded_file.type == "text/plain":
+            st.session_state.texto = leer_txt(uploaded_file)
+        else:
+            st.error("Formato no soportado")
+            st.session_state.texto = ""
+        # Generar resumen
         resumen_total = []
-        for i, bloque in enumerate(dividir_en_bloques(texto, max_parrafos=50)):
-            resumen_bloque = resumir_bloque(bloque, max_sentencias=3)
-            resumen_total.append(resumen_bloque)
-        
-        resumen_completo = "\n\n".join(resumen_total)
-        st.text_area("Resumen", resumen_completo, height=400, key="resumen_area")
+        for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
+            resumen_total.append(resumir_bloque(bloque, max_sentencias=3))
+        st.session_state.resumen = "\n\n".join(resumen_total)
+
+# Mostrar contenido si existe
+if st.session_state.texto:
+    st.subheader("Texto original")
+    st.text_area("Texto completo", st.session_state.texto, height=300, key="texto_original_area")
+
+if st.session_state.resumen:
+    st.subheader("Resumen generado")
+    st.text_area("Resumen", st.session_state.resumen, height=400, key="resumen_area")
+
 
