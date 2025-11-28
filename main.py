@@ -1,6 +1,7 @@
 import streamlit as st
 from PyPDF2 import PdfReader
 import re
+from collections import Counter
 
 st.set_page_config(page_title="Herramienta para resumir archivos", layout="wide")
 st.title("RESUME tus PDF/TXT")
@@ -17,20 +18,33 @@ def dividir_en_bloques_por_lineas(texto):
 
 def resumir_bloque(texto, max_sentencias=2):
     """
-    Resume un bloque completo tomando hasta max_sentencias frases.
-    Normaliza saltos de línea para que las frases se detecten correctamente.
+    Resume un bloque tomando las frases más relevantes
+    basado en frecuencia de palabras (extractivo).
     """
-    # Reemplazar saltos de línea por espacios
-    texto = texto.replace("\n", " ").replace("\r", "")
+    texto = texto.replace("\r\n", "\n").replace("\r", "\n").strip()
     
-    # Dividir en frases por puntos
+    # Dividir en frases
     frases = [f.strip() for f in re.split(r'\.\s+', texto) if f.strip()]
     
-    # Tomar solo las primeras max_sentencias frases
-    resumen_frases = frases[:max_sentencias]
+    if len(frases) <= max_sentencias:
+        return ". ".join(frases) + ("." if frases else "")
     
-    # Volver a unir en un texto
-    return ". ".join(resumen_frases) + ("." if resumen_frases else "")
+    # Contar frecuencia de palabras
+    palabras = re.findall(r'\w+', texto.lower())
+    freq = Counter(palabras)
+    
+    # Calcular score de cada frase
+    frase_scores = []
+    for frase in frases:
+        palabras_frase = re.findall(r'\w+', frase.lower())
+        score = sum(freq[p] for p in palabras_frase)
+        frase_scores.append((score, frase))
+    
+    # Seleccionar las max_sentencias frases con mayor score
+    frase_scores.sort(reverse=True)
+    resumen_frases = [f for s, f in frase_scores[:max_sentencias]]
+    
+    return ". ".join(resumen_frases) + "."
 
 def leer_pdf(file):
     reader = PdfReader(file)
