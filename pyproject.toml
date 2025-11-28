@@ -4,11 +4,13 @@ version = "1.0.0"
 description = "Local PDF/TXT summarizer without using OpenAI"
 authors = ["Tu Nombre <tu@email.com>"]
 readme = "README.md"
-packages = []  # ✅ Deshabilitamos modo paquete para Streamlit Cloud
+# ⚠ Desactivamos package mode para evitar errores de instalación
+packages = []
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
-streamlit = "^1.37.0"
+streamlit = "^1.51.0"
 PyPDF2 = "^3.0.1"
 
 [build-system]
