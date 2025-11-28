@@ -1,0 +1,2 @@
+# 003_streamlit_split_and_summarize_resumido
+003_streamlit_split_and_summarize resumiendo al minimo sin open ai
