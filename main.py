@@ -42,3 +42,8 @@ if uploaded_file:
         st.subheader("Resumen generado")
         resumen = resumir_texto(texto, max_sentencias=3)
         st.text_area("Resumen", resumen, height=200)
+
+        
+        st.subheader("Resumen generado")
+        resumen = resumir_texto(texto, max_sentencias=3)
+        st.text_area("Resumen", resumen, height=200)
