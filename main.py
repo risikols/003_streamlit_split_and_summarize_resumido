@@ -11,7 +11,7 @@ def dividir_en_bloques(texto, max_parrafos=50):
     for i in range(0, len(parrafos), max_parrafos):
         yield "\n\n".join(parrafos[i:i + max_parrafos])
 
-def resumir_bloque(texto, max_sentencias=3):  # máximo 3 líneas por bloque
+def resumir_bloque(texto, max_sentencias=3):  # máximo 3 frases por bloque
     texto = texto.replace("\r\n", "\n").replace("\r", "\n")
     parrafos = [p.strip() for p in texto.split("\n\n") if p.strip()]
     resumen_parrafos = []
@@ -39,15 +39,9 @@ if "resumen" not in st.session_state:
     st.session_state.resumen = ""
 if "file_counter" not in st.session_state:
     st.session_state.file_counter = 0
-if "uploaded_file" not in st.session_state:
-    st.session_state.uploaded_file = None
 
-# ---------------------- Botón personalizado ----------------------
-st.write("")  # espacio
-if st.button("Seleccione archivo"):
-    st.session_state.uploaded_file = st.file_uploader("", type=["pdf", "txt"], key="hidden_uploader")
-
-uploaded_file = st.session_state.get("uploaded_file", None)
+# ---------------------- File uploader ----------------------
+uploaded_file = st.file_uploader("Seleccione archivo", type=["pdf", "txt"], key="uploader")
 
 if uploaded_file:
     # Incrementar contador
@@ -68,7 +62,7 @@ if uploaded_file:
     if st.session_state.texto:
         resumen_total = []
         for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
-            resumen_total.append(resumir_bloque(bloque, max_sentencias=3))  # máximo 3 líneas por bloque
+            resumen_total.append(resumir_bloque(bloque, max_sentencias=3))  # máximo 3 frases por bloque
         st.session_state.resumen = "\n\n".join(resumen_total)
 
 # ---------------------- Mostrar contenido ----------------------
