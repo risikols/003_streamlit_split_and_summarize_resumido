@@ -4,27 +4,35 @@ from PyPDF2 import PdfReader
 st.set_page_config(page_title="Resumidor Realista", layout="wide")
 st.title("Resumidor de PDF/TXT")
 
+# ---------------------- CSS para botón ----------------------
+st.markdown("""
+<style>
+/* Cambiar el texto del botón a "Seleccionar archivo" */
+div.stFileUploader button {
+    color: white;
+    background-color: #4CAF50;
+    border: none;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+div.stFileUploader label {
+    display: none;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ---------------------- Funciones ----------------------
 def dividir_en_bloques(texto, max_parrafos=50):
-    """
-    Divide el texto en bloques de hasta max_parrafos párrafos.
-    Cada párrafo es una línea no vacía separada por \n\n.
-    """
-    texto = texto.replace("\r\n", "\n").replace("\r", "\n")  # Normalizar saltos de línea
+    texto = texto.replace("\r\n", "\n").replace("\r", "\n")
     parrafos = [p.strip() for p in texto.split("\n\n") if p.strip()]
     for i in range(0, len(parrafos), max_parrafos):
         yield "\n\n".join(parrafos[i:i + max_parrafos])
 
-def resumir_bloque(texto, max_sentencias=3):
-    """
-    Resume cada párrafo de un bloque tomando hasta max_sentencias frases por párrafo.
-    Mantiene los párrafos separados.
-    """
+def resumir_bloque(texto, max_sentencias=5):  # ajustar a 5 frases por párrafo
     texto = texto.replace("\r\n", "\n").replace("\r", "\n")
     parrafos = [p.strip() for p in texto.split("\n\n") if p.strip()]
     resumen_parrafos = []
     for parrafo in parrafos:
-        # Separar frases usando ". " como delimitador
         frases = [f.strip() for f in parrafo.split(". ") if f.strip()]
         resumen_parrafos.append(". ".join(frases[:max_sentencias]))
     return "\n\n".join(resumen_parrafos)
@@ -33,7 +41,9 @@ def leer_pdf(file):
     reader = PdfReader(file)
     texto = ""
     for page in reader.pages:
-        texto += page.extract_text() + "\n\n"
+        page_text = page.extract_text()
+        if page_text:
+            texto += page_text + "\n\n"
     return texto
 
 def leer_txt(file):
@@ -45,20 +55,14 @@ if "texto" not in st.session_state:
 if "resumen" not in st.session_state:
     st.session_state.resumen = ""
 if "file_counter" not in st.session_state:
-    st.session_state.file_counter = 0  # Contador de archivos subidos
+    st.session_state.file_counter = 0
 
 # ---------------------- File uploader ----------------------
-uploaded_file = st.file_uploader(
-    label="Seleccionar archivo",  # Texto del botón
-    type=["pdf", "txt"],
-    key="uploader"
-)
+uploaded_file = st.file_uploader("", type=["pdf","txt"], key="uploader")
 
 if uploaded_file:
-    # Incrementar contador cada vez que se selecciona un archivo nuevo
+    # Incrementar contador
     st.session_state.file_counter += 1
-
-    # Resetear texto y resumen anteriores
     st.session_state.texto = ""
     st.session_state.resumen = ""
 
@@ -71,11 +75,11 @@ if uploaded_file:
         st.error("Formato no soportado")
         st.session_state.texto = ""
 
-    # Generar resumen por bloques si hay texto
+    # Generar resumen si hay texto
     if st.session_state.texto:
         resumen_total = []
         for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
-            resumen_total.append(resumir_bloque(bloque, max_sentencias=3))
+            resumen_total.append(resumir_bloque(bloque, max_sentencias=5))
         st.session_state.resumen = "\n\n".join(resumen_total)
 
 # ---------------------- Mostrar contenido ----------------------
@@ -96,3 +100,4 @@ if st.session_state.resumen:
         height=400,
         key=f"resumen_area_{st.session_state.file_counter}"
     )
+
