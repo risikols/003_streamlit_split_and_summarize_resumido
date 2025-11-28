@@ -1,42 +1,26 @@
 import streamlit as st
-from PyPDF2 import PdfReader
 import pandas as pd
+from PyPDF2 import PdfReader
 
-st.set_page_config(page_title="Resumidor Local", layout="wide")
-st.title("Resumidor Local PDF/TXT (Simulado)")
+st.title("Simulador de resúmenes PDF/TXT")
 
-uploaded_file = st.file_uploader("Sube un PDF o TXT", type=["pdf", "txt"])
-
-def summarize_text(text, max_sentences=3):
-    """
-    Función que simula un resumen.
-    Devuelve las primeras `max_sentences` frases del texto.
-    """
-    # Separar por puntos
-    sentences = [s.strip() for s in text.replace("\n", " ").split(".") if s.strip()]
-    summary = ". ".join(sentences[:max_sentences])
-    if summary:
-        summary += "."
-    return summary
+uploaded_file = st.file_uploader("Sube un archivo TXT o PDF", type=["txt", "pdf"])
 
 if uploaded_file:
-    file_type = uploaded_file.name.split(".")[-1].lower()
-
-    if file_type == "pdf":
-        reader = PdfReader(uploaded_file)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() + " "
-    elif file_type == "txt":
-        text = uploaded_file.read().decode("utf-8")
+    if uploaded_file.type == "text/plain":
+        content = uploaded_file.read().decode("utf-8")
+    elif uploaded_file.type == "application/pdf":
+        pdf = PdfReader(uploaded_file)
+        content = "\n".join(page.extract_text() or "" for page in pdf.pages)
     else:
         st.error("Formato no soportado")
-        st.stop()
+        content = ""
 
-    st.subheader("Texto original")
-    st.text_area("Texto completo:", text, height=200)
+    st.subheader("Contenido original")
+    st.text_area("Texto completo", content, height=200)
 
+    # Simulación de resumen
+    lines = content.splitlines()
+    simulated_summary = " ".join(lines[:3])  # Tomamos las primeras 3 líneas como resumen
     st.subheader("Resumen simulado")
-    # Puedes cambiar max_sentences para resúmenes más largos o más cortos
-    summary = summarize_text(text, max_sentences=3)
-    st.text_area("Resumen:", summary, height=150)
+    st.text_area("Resumen", simulated_summary, height=100)
