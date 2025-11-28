@@ -9,19 +9,27 @@ st.title("RESUME tus PDF/TXT")
 def dividir_en_bloques_por_lineas(texto):
     """
     Divide el texto en bloques usando como separador
-    más de dos líneas en blanco consecutivas.
+    dos o más líneas en blanco consecutivas.
     """
     bloques = re.split(r'\n{3,}', texto.replace('\r\n', '\n').replace('\r', '\n'))
     bloques = [b.strip() for b in bloques if b.strip()]
     return bloques
 
-def resumir_bloque(texto, max_sentencias=3):
+def resumir_bloque(texto, max_sentencias=2):
     """
-    Resume un bloque completo tomando hasta max_sentencias frases en total.
+    Resume un bloque completo tomando hasta max_sentencias frases.
+    Normaliza saltos de línea para que las frases se detecten correctamente.
     """
-    # Dividir todo el bloque en frases
-    frases = [f.strip() for f in re.split(r'\. ', texto) if f.strip()]
+    # Reemplazar saltos de línea por espacios
+    texto = texto.replace("\n", " ").replace("\r", "")
+    
+    # Dividir en frases por puntos
+    frases = [f.strip() for f in re.split(r'\.\s+', texto) if f.strip()]
+    
+    # Tomar solo las primeras max_sentencias frases
     resumen_frases = frases[:max_sentencias]
+    
+    # Volver a unir en un texto
     return ". ".join(resumen_frases) + ("." if resumen_frases else "")
 
 def leer_pdf(file):
@@ -61,10 +69,10 @@ if uploaded_file:
         st.error("Formato no soportado")
         st.session_state.texto = ""
 
-    # Generar resumen por bloques (separados por más de dos líneas en blanco)
+    # Generar resumen por bloques
     if st.session_state.texto:
         bloques = dividir_en_bloques_por_lineas(st.session_state.texto)
-        resumen_total = [resumir_bloque(b, max_sentencias=3) for b in bloques]  # máximo 2 frases por bloque
+        resumen_total = [resumir_bloque(b, max_sentencias=2) for b in bloques]
         st.session_state.resumen = "\n\n".join(resumen_total)
 
 # ---------------------- Mostrar contenido ----------------------
@@ -85,4 +93,3 @@ if st.session_state.resumen:
         height=400,
         key=f"resumen_area_{st.session_state.file_counter}"
     )
-
