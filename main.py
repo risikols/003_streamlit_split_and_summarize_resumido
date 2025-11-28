@@ -5,18 +5,29 @@ st.set_page_config(page_title="Resumidor Realista", layout="wide")
 st.title("Resumidor de PDF/TXT")
 
 # ---------------------- Funciones ----------------------
+def dividir_en_bloques(texto, max_parrafos=50):
+    """
+    Divide el texto en bloques de hasta max_parrafos párrafos.
+    Cada párrafo es una línea no vacía separada por \n\n.
+    """
+    texto = texto.replace("\r\n", "\n").replace("\r", "\n")  # Normalizar saltos de línea
+    parrafos = [p.strip() for p in texto.split("\n\n") if p.strip()]
+    for i in range(0, len(parrafos), max_parrafos):
+        yield "\n\n".join(parrafos[i:i + max_parrafos])
+
 def resumir_bloque(texto, max_sentencias=3):
-    bloques = texto.split("\n\n")
+    """
+    Resume cada párrafo de un bloque tomando hasta max_sentencias frases por párrafo.
+    Mantiene los párrafos separados.
+    """
+    texto = texto.replace("\r\n", "\n").replace("\r", "\n")
+    parrafos = [p.strip() for p in texto.split("\n\n") if p.strip()]
     resumen_parrafos = []
-    for bloque in bloques:
-        frases = [f.strip() for f in bloque.split(".") if f.strip()]
+    for parrafo in parrafos:
+        # Separar frases usando ". " como delimitador
+        frases = [f.strip() for f in parrafo.split(". ") if f.strip()]
         resumen_parrafos.append(". ".join(frases[:max_sentencias]))
     return "\n\n".join(resumen_parrafos)
-
-def dividir_en_bloques(texto, max_parrafos=50):
-    bloques = texto.split("\n\n")
-    for i in range(0, len(bloques), max_parrafos):
-        yield "\n\n".join(bloques[i:i + max_parrafos])
 
 def leer_pdf(file):
     reader = PdfReader(file)
@@ -37,11 +48,19 @@ if "file_counter" not in st.session_state:
     st.session_state.file_counter = 0  # Contador de archivos subidos
 
 # ---------------------- File uploader ----------------------
-uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"], key="uploader")
+uploaded_file = st.file_uploader(
+    label="Seleccionar archivo",  # Texto del botón
+    type=["pdf", "txt"],
+    key="uploader"
+)
 
 if uploaded_file:
     # Incrementar contador cada vez que se selecciona un archivo nuevo
     st.session_state.file_counter += 1
+
+    # Resetear texto y resumen anteriores
+    st.session_state.texto = ""
+    st.session_state.resumen = ""
 
     # Leer archivo
     if uploaded_file.type == "application/pdf":
@@ -52,7 +71,7 @@ if uploaded_file:
         st.error("Formato no soportado")
         st.session_state.texto = ""
 
-    # Generar resumen
+    # Generar resumen por bloques si hay texto
     if st.session_state.texto:
         resumen_total = []
         for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
@@ -66,7 +85,7 @@ if st.session_state.texto:
         "Texto completo",
         st.session_state.texto,
         height=300,
-        key=f"texto_original_area_{st.session_state.file_counter}"  # clave dinámica
+        key=f"texto_original_area_{st.session_state.file_counter}"
     )
 
 if st.session_state.resumen:
@@ -75,5 +94,5 @@ if st.session_state.resumen:
         "Resumen",
         st.session_state.resumen,
         height=400,
-        key=f"resumen_area_{st.session_state.file_counter}"  # clave dinámica
+        key=f"resumen_area_{st.session_state.file_counter}"
     )
