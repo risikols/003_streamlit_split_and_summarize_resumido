@@ -64,7 +64,7 @@ if uploaded_file:
     # Generar resumen por bloques (separados por más de dos líneas en blanco)
     if st.session_state.texto:
         bloques = dividir_en_bloques_por_lineas(st.session_state.texto)
-        resumen_total = [resumir_bloque(b, max_sentencias=2) for b in bloques]  # máximo 2 frases por bloque
+        resumen_total = [resumir_bloque(b, max_sentencias=3) for b in bloques]  # máximo 2 frases por bloque
         st.session_state.resumen = "\n\n".join(resumen_total)
 
 # ---------------------- Mostrar contenido ----------------------
