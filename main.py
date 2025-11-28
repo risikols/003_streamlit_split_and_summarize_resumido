@@ -75,7 +75,7 @@ if uploaded_file:
     if st.session_state.texto:
         resumen_total = []
         for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
-            resumen_total.append(resumir_bloque(bloque, max_sentencias=3))  # máximo 3 frases por bloque
+            resumen_total.append(resumir_bloque(bloque, max_sentencias=2))  # máximo 3 frases por bloque
         st.session_state.resumen = "\n\n".join(resumen_total)
 
 # ---------------------- Mostrar contenido ----------------------
