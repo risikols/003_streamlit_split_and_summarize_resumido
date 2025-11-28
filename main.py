@@ -5,7 +5,7 @@ import pandas as pd
 st.set_page_config(page_title="Resumidor Realista", layout="wide")
 st.title("Resumidor de PDF/TXT")
 
-uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"])
+uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"], key="uploader")
 
 def resumir_texto(texto, max_sentencias=3):
     """Genera un resumen simple tomando las primeras frases de cada bloque."""
@@ -34,16 +34,14 @@ if uploaded_file:
     else:
         st.error("Formato no soportado")
         texto = ""
-    
-    if texto:
-        st.subheader("Texto original")
-        st.text_area("Texto completo", texto, height=300)
-        
-        st.subheader("Resumen generado")
-        resumen = resumir_texto(texto, max_sentencias=3)
-        st.text_area("Resumen", resumen, height=200)
 
-        
+    if texto:
+        # Texto original
+        st.subheader("Texto original")
+        st.text_area("Texto completo", texto, height=300, key="texto_original_area")
+
+        # Resumen generado
         st.subheader("Resumen generado")
         resumen = resumir_texto(texto, max_sentencias=3)
-        st.text_area("Resumen", resumen, height=200)
+        st.text_area("Resumen", resumen, height=200, key="resumen_area")
+
