@@ -33,14 +33,15 @@ if "texto" not in st.session_state:
     st.session_state.texto = ""
 if "resumen" not in st.session_state:
     st.session_state.resumen = ""
+if "file_counter" not in st.session_state:
+    st.session_state.file_counter = 0  # Contador de archivos subidos
 
 # ---------------------- File uploader ----------------------
 uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"], key="uploader")
 
 if uploaded_file:
-    # Resetear siempre el estado
-    st.session_state.texto = ""
-    st.session_state.resumen = ""
+    # Incrementar contador cada vez que se selecciona un archivo nuevo
+    st.session_state.file_counter += 1
 
     # Leer archivo
     if uploaded_file.type == "application/pdf":
@@ -51,7 +52,7 @@ if uploaded_file:
         st.error("Formato no soportado")
         st.session_state.texto = ""
 
-    # Generar resumen si hay texto
+    # Generar resumen
     if st.session_state.texto:
         resumen_total = []
         for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
@@ -61,8 +62,18 @@ if uploaded_file:
 # ---------------------- Mostrar contenido ----------------------
 if st.session_state.texto:
     st.subheader("Texto original")
-    st.text_area("Texto completo", st.session_state.texto, height=300, key="texto_original_area")
+    st.text_area(
+        "Texto completo",
+        st.session_state.texto,
+        height=300,
+        key=f"texto_original_area_{st.session_state.file_counter}"  # clave dinámica
+    )
 
 if st.session_state.resumen:
     st.subheader("Resumen generado")
-    st.text_area("Resumen", st.session_state.resumen, height=400, key="resumen_area")
+    st.text_area(
+        "Resumen",
+        st.session_state.resumen,
+        height=400,
+        key=f"resumen_area_{st.session_state.file_counter}"  # clave dinámica
+    )
