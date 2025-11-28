@@ -1,8 +1,8 @@
 import streamlit as st
 from PyPDF2 import PdfReader
 
-st.set_page_config(page_title="Resumidor Realista", layout="wide")
-st.title("Resumidor de PDF/TXT")
+st.set_page_config(page_title="Herramienta para resumir archivos", layout="wide")
+st.title("RESUME tus PDF/TXT")
 
 # ---------------------- Funciones ----------------------
 def dividir_en_bloques(texto, max_parrafos=50):
