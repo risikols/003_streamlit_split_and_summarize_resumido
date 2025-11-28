@@ -4,6 +4,24 @@ from PyPDF2 import PdfReader
 st.set_page_config(page_title="Resumidor Realista", layout="wide")
 st.title("Resumidor de PDF/TXT")
 
+# ---------------------- CSS para el botón ----------------------
+st.markdown("""
+<style>
+/* Cambiar color y estilo del botón del file_uploader */
+div.stFileUploader button {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+div.stFileUploader label {
+    font-size: 18px;
+    font-weight: bold;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ---------------------- Funciones ----------------------
 def dividir_en_bloques(texto, max_parrafos=50):
     texto = texto.replace("\r\n", "\n").replace("\r", "\n")
@@ -11,7 +29,7 @@ def dividir_en_bloques(texto, max_parrafos=50):
     for i in range(0, len(parrafos), max_parrafos):
         yield "\n\n".join(parrafos[i:i + max_parrafos])
 
-def resumir_bloque(texto, max_sentencias=3):  # máximo 3 frases por bloque
+def resumir_bloque(texto, max_sentencias=3):
     texto = texto.replace("\r\n", "\n").replace("\r", "\n")
     parrafos = [p.strip() for p in texto.split("\n\n") if p.strip()]
     resumen_parrafos = []
@@ -41,10 +59,10 @@ if "file_counter" not in st.session_state:
     st.session_state.file_counter = 0
 
 # ---------------------- File uploader ----------------------
-uploaded_file = st.file_uploader("Seleccione archivo", type=["pdf", "txt"], key="uploader")
+st.write("**Seleccione archivo**")  # Texto visible encima del botón
+uploaded_file = st.file_uploader("", type=["pdf", "txt"], key="uploader")
 
 if uploaded_file:
-    # Incrementar contador
     st.session_state.file_counter += 1
     st.session_state.texto = ""
     st.session_state.resumen = ""
@@ -58,11 +76,11 @@ if uploaded_file:
         st.error("Formato no soportado")
         st.session_state.texto = ""
 
-    # Generar resumen por bloques si hay texto
+    # Generar resumen por bloques
     if st.session_state.texto:
         resumen_total = []
         for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
-            resumen_total.append(resumir_bloque(bloque, max_sentencias=3))  # máximo 3 frases por bloque
+            resumen_total.append(resumir_bloque(bloque, max_sentencias=3))
         st.session_state.resumen = "\n\n".join(resumen_total)
 
 # ---------------------- Mostrar contenido ----------------------
@@ -83,4 +101,3 @@ if st.session_state.resumen:
         height=400,
         key=f"resumen_area_{st.session_state.file_counter}"
     )
-
