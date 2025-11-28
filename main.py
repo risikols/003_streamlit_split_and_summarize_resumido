@@ -36,29 +36,28 @@ if "resumen" not in st.session_state:
 uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"], key="uploader")
 
 if uploaded_file:
-    # Leer archivo solo si es distinto del anterior
-    if uploaded_file.name != st.session_state.get("last_uploaded_file", ""):
-        st.session_state.last_uploaded_file = uploaded_file.name
-        if uploaded_file.type == "application/pdf":
-            st.session_state.texto = leer_pdf(uploaded_file)
-        elif uploaded_file.type == "text/plain":
-            st.session_state.texto = leer_txt(uploaded_file)
-        else:
-            st.error("Formato no soportado")
-            st.session_state.texto = ""
-        # Generar resumen
+    # Leer archivo siempre que se suba
+    if uploaded_file.type == "application/pdf":
+        st.session_state.texto = leer_pdf(uploaded_file)
+    elif uploaded_file.type == "text/plain":
+        st.session_state.texto = leer_txt(uploaded_file)
+    else:
+        st.error("Formato no soportado")
+        st.session_state.texto = ""
+
+    # Generar resumen solo si hay texto
+    if st.session_state.texto:
         resumen_total = []
         for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
             resumen_total.append(resumir_bloque(bloque, max_sentencias=3))
         st.session_state.resumen = "\n\n".join(resumen_total)
 
-# Mostrar contenido si existe
+# Mostrar texto original
 if st.session_state.texto:
     st.subheader("Texto original")
     st.text_area("Texto completo", st.session_state.texto, height=300, key="texto_original_area")
 
+# Mostrar resumen
 if st.session_state.resumen:
     st.subheader("Resumen generado")
     st.text_area("Resumen", st.session_state.resumen, height=400, key="resumen_area")
-
-
