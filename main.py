@@ -1,50 +1,40 @@
 import streamlit as st
 from PyPDF2 import PdfReader
 
-# Configuración de la página
-st.set_page_config(page_title="PDF/TXT Summarizer Local", layout="wide")
-st.title("📝 Local PDF/TXT Summarizer (Simulado)")
+st.set_page_config(page_title="PDF/TXT Summarizer (Simulado)", layout="wide")
+st.title("📝 Summarizador de textos (Simulado)")
 
-# Carga de archivo
+# Cargar archivo
 uploaded_file = st.file_uploader("Sube tu PDF o TXT aquí", type=["pdf", "txt"])
-
-def summarize_text(text: str, max_lines: int = 5) -> str:
-    """
-    Genera un resumen simulado: toma la primera frase de cada párrafo
-    y limita el resumen a `max_lines` líneas.
-    """
-    lines = []
-    for paragraph in text.split("\n"):
-        paragraph = paragraph.strip()
-        if paragraph:
-            # Tomamos solo la primera frase de cada párrafo
-            first_sentence = paragraph.split(".")[0].strip()
-            if first_sentence:
-                lines.append(first_sentence + ".")
-        if len(lines) >= max_lines:
-            break
-    return "\n".join(lines)
+text = ""
 
 if uploaded_file:
-    # Lectura del archivo según tipo
     if uploaded_file.type == "application/pdf":
         reader = PdfReader(uploaded_file)
-        text = ""
         for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted + "\n"
+    elif uploaded_file.type == "text/plain":
+        text = uploaded_file.read().decode("utf-8")
+
+    if not text.strip():
+        st.error("No se encontró texto en el archivo.")
     else:
-        text = uploaded_file.getvalue().decode("utf-8")
+        st.subheader("Texto extraído")
+        st.text_area("Contenido", text, height=300)
 
-    st.subheader("Texto extraído")
-    st.text_area("Contenido del archivo", text, height=300)
+        if st.button("Generar resumen"):
+            with st.spinner("Generando resumen simulado..."):
+                # Dividir el texto en bloques por párrafos
+                blocks = [b.strip() for b in text.split("\n\n") if b.strip()]
+                summaries = []
 
-    if st.button("Generar resumen"):
-        if not text.strip():
-            st.error("No se encontró texto en el archivo.")
-        else:
-            with st.spinner("Generando resumen..."):
-                summary = summarize_text(text, max_lines=5)  # ≤5 líneas
-                st.subheader("Resumen generado")
-                st.write(summary)
+                for block in blocks:
+                    # Simulación: tomar las primeras 2 líneas de cada bloque
+                    lines = block.splitlines()
+                    summaries.append("\n".join(lines[:2]))
+
+                final_summary = "\n\n".join(summaries)
+                st.subheader("Resumen simulado")
+                st.write(final_summary)
