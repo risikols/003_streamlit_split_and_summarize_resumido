@@ -51,15 +51,12 @@ if uploaded_file:
         st.error("Formato no soportado")
         st.session_state.texto = ""
 
-    # Generar resumen
+    # Generar resumen si hay texto
     if st.session_state.texto:
         resumen_total = []
         for bloque in dividir_en_bloques(st.session_state.texto, max_parrafos=50):
             resumen_total.append(resumir_bloque(bloque, max_sentencias=3))
         st.session_state.resumen = "\n\n".join(resumen_total)
-
-    # Forzar recarga de la app para que los nuevos widgets se muestren
-    st.experimental_rerun()
 
 # ---------------------- Mostrar contenido ----------------------
 if st.session_state.texto:
@@ -69,5 +66,3 @@ if st.session_state.texto:
 if st.session_state.resumen:
     st.subheader("Resumen generado")
     st.text_area("Resumen", st.session_state.resumen, height=400, key="resumen_area")
-
-
