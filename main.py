@@ -1,20 +1,29 @@
 import streamlit as st
 from PyPDF2 import PdfReader
-import pandas as pd
 
 st.set_page_config(page_title="Resumidor Realista", layout="wide")
 st.title("Resumidor de PDF/TXT")
 
 uploaded_file = st.file_uploader("Sube un archivo PDF o TXT", type=["pdf", "txt"], key="uploader")
 
-def resumir_texto(texto, max_sentencias=3):
-    """Genera un resumen simple tomando las primeras frases de cada bloque."""
-    bloques = texto.split("\n\n")  # separar por párrafos
-    resumen = []
+def resumir_bloque(texto, max_sentencias=3):
+    """
+    Resume un bloque de texto tomando las primeras max_sentencias de cada párrafo
+    """
+    bloques = texto.split("\n\n")
+    resumen_parrafos = []
     for bloque in bloques:
         frases = [f.strip() for f in bloque.split(".") if f.strip()]
-        resumen.extend(frases[:max_sentencias])
-    return ". ".join(resumen) + ("." if resumen else "")
+        resumen_parrafos.append(". ".join(frases[:max_sentencias]))
+    return "\n\n".join(resumen_parrafos)
+
+def dividir_en_bloques(texto, max_parrafos=50):
+    """
+    Divide el texto en bloques de hasta max_parrafos párrafos
+    """
+    bloques = texto.split("\n\n")
+    for i in range(0, len(bloques), max_parrafos):
+        yield "\n\n".join(bloques[i:i + max_parrafos])
 
 def leer_pdf(file):
     reader = PdfReader(file)
@@ -36,12 +45,17 @@ if uploaded_file:
         texto = ""
 
     if texto:
-        # Texto original
         st.subheader("Texto original")
         st.text_area("Texto completo", texto, height=300, key="texto_original_area")
 
-        # Resumen generado
         st.subheader("Resumen generado")
-        resumen = resumir_texto(texto, max_sentencias=3)
-        st.text_area("Resumen", resumen, height=200, key="resumen_area")
+
+        # Procesar el texto en bloques para documentos grandes
+        resumen_total = []
+        for i, bloque in enumerate(dividir_en_bloques(texto, max_parrafos=50)):
+            resumen_bloque = resumir_bloque(bloque, max_sentencias=3)
+            resumen_total.append(resumen_bloque)
+        
+        resumen_completo = "\n\n".join(resumen_total)
+        st.text_area("Resumen", resumen_completo, height=400, key="resumen_area")
 
